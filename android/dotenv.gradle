@@ -3,14 +3,15 @@ import java.util.regex.Pattern
 
 def getCurrentFlavor() {
     Gradle gradle = getGradle()
-    String tskReqStr = gradle.getStartParameter().getTaskRequests()[0].args
-
-    Matcher matcher = Pattern.compile("([A-Z]\\w+)").matcher( tskReqStr )
-    if( matcher.find() ) {
-        return matcher.group(1).toLowerCase()
-    } else {
-        return "";
+    def tasks = gradle.getStartParameter().getTaskRequests()
+    if (tasks.size() > 0) {
+      String tskReqStr = tasks[0].args
+      Matcher matcher = Pattern.compile("([A-Z]\\w+)").matcher( tskReqStr )
+      if( matcher.find() ) {
+          return matcher.group(1).toLowerCase()
+      }
     }
+    return ""
 }
 
 def readDotEnv = {
@@ -22,7 +23,10 @@ def readDotEnv = {
         def possibleFile = project.envConfigFiles.get(getCurrentFlavor())
         if (possibleFile) {
             envFile = possibleFile;
+        } else if (project.envConfigFilesDefault) {
+            envFile = project.envConfigFiles.get(project.envConfigFilesDefault)
         }
+
     }
 
     def env = [:]
